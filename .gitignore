@@ -17,3 +17,6 @@ data/
 
 # Mac system files
 .DS_Store
+
+# SQLite DB
+*.db
