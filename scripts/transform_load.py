@@ -1,3 +1,4 @@
+from extract import download_data
 import pandas as pd
 import sqlite3
 
@@ -103,6 +104,7 @@ def load_fact_table(conn, df):
 
 
 def main():
+    download_data()
     df = pd.read_csv(CSV_PATH)
     conn = create_database()
     load_dimensions(conn, df)
