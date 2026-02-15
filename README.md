@@ -17,9 +17,6 @@ production-ready design principles.
 ## Dataset
 
 Source: Kaggle -- Supermarket Sales Dataset\
-Records: 1000 transactions\
-Columns: 17 attributes including Invoice ID, Branch, City, Product line,
-Sales, Quantity, Rating, etc.
 
 ### Important Modeling Decision
 
@@ -179,16 +176,6 @@ sqlite3 supermarket.db
 -   Explicit schema with foreign key constraints
 -   Indexing for performance optimization
 -   Idempotent pipeline execution
-
-------------------------------------------------------------------------
-
-## Future Enhancements
-
--   Replace SQLite with cloud data warehouse (BigQuery / Redshift)
--   Containerization using Docker
--   Airflow orchestration
--   Incremental loading strategy
--   SCD Type 2 implementation for dimensions
 
 ------------------------------------------------------------------------
 
