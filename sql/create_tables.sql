@@ -1,48 +1,34 @@
--- Drop tables if they already exist
 DROP TABLE IF EXISTS fact_sales;
-DROP TABLE IF EXISTS dim_customer;
+DROP TABLE IF EXISTS dim_customer_profile;
 DROP TABLE IF EXISTS dim_product;
 
----------------------------------------------------
--- Dimension Table: Customer
----------------------------------------------------
-CREATE TABLE dim_customer (
-    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE dim_customer_profile (
+    customer_profile_id INTEGER PRIMARY KEY,
     customer_type TEXT NOT NULL,
-    gender TEXT NOT NULL,
-    UNIQUE(customer_type, gender)
+    gender TEXT NOT NULL
 );
 
----------------------------------------------------
--- Dimension Table: Product
----------------------------------------------------
 CREATE TABLE dim_product (
-    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_line TEXT NOT NULL,
-    unit_price REAL NOT NULL,
-    UNIQUE(product_line, unit_price)
+    product_id INTEGER PRIMARY KEY,
+    product_line TEXT NOT NULL
 );
 
----------------------------------------------------
--- Fact Table: Sales
----------------------------------------------------
 CREATE TABLE fact_sales (
-    sale_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    invoice_id TEXT,
+    sales_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    invoice_id TEXT NOT NULL,
+    customer_profile_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
     branch TEXT,
     city TEXT,
     date TEXT,
-    time TEXT,
     payment TEXT,
     quantity INTEGER,
-    tax REAL,
+    unit_price REAL,
     sales REAL,
-    cogs REAL,
     gross_income REAL,
     rating REAL,
-    customer_id INTEGER,
-    product_id INTEGER,
-    
-    FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
-    FOREIGN KEY (product_id) REFERENCES dim_product(product_id)
+    FOREIGN KEY (customer_profile_id)
+        REFERENCES dim_customer_profile(customer_profile_id),
+    FOREIGN KEY (product_id)
+        REFERENCES dim_product(product_id)
 );

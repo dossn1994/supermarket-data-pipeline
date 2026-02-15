@@ -1,0 +1,3 @@
+dataset: faresashraf1001/supermarket-sales
+raw_data_path: data/raw
+database_path: supermarket.db

@@ -1,143 +1,200 @@
-# 🛒 Supermarket Sales Data Pipeline
+# Supermarket Data Pipeline
 
-## 📌 Project Overview
+## Overview
 
-This project demonstrates the design and implementation of an end-to-end
-data pipeline that:
+This project implements a production-grade ETL (Extract, Transform,
+Load) pipeline using the Kaggle Supermarket Sales dataset.
 
--   Extracts sales data programmatically from Kaggle using the Kaggle API
--   Transforms it into dimensional (star schema) format
--   Loads it into a SQLite database
--   Generates an analytical report using SQL (with joins and window functions)
--   Proposes a scalable cloud deployment architecture (GCP)
+The solution: - Extracts data using the Kaggle API - Transforms it into
+a dimensional star schema - Loads it into a SQLite database - Generates
+an analytical SQL report using joins and window functions
 
-------------------------------------------------------------------------
-
-# 🏗️ Architecture Overview (Local Implementation)
-
-Kaggle API
-→ Python Extraction Script
-→ Transformation (Star Schema)
-→ SQLite Database
-→ SQL Analytical Report
+The pipeline is modular, validated, and structured following
+production-ready design principles.
 
 ------------------------------------------------------------------------
 
-# 📊 Data Modeling
+## Dataset
 
-## Dimension Tables
+Source: Kaggle -- Supermarket Sales Dataset\
+Records: 1000 transactions\
+Columns: 17 attributes including Invoice ID, Branch, City, Product line,
+Sales, Quantity, Rating, etc.
 
-### dim_customer
+### Important Modeling Decision
 
--   customer_id (PK)
+The dataset does **not** contain a unique customer identifier.
+
+Therefore, instead of modeling a `customer` dimension, this solution
+implements a `customer_profile` dimension based on:
+
+-   Customer type (Member / Normal)
+-   Gender (Male / Female)
+
+This preserves dimensional modeling best practices while respecting
+source data limitations.
+
+------------------------------------------------------------------------
+
+## Data Modeling (Star Schema)
+
+### Dimension Tables
+
+#### 1. dim_customer_profile
+
+-   customer_profile_id (Primary Key)
 -   customer_type
 -   gender
 
-### dim_product
+#### 2. dim_product
 
--   product_id (PK)
+-   product_id (Primary Key)
 -   product_line
--   unit_price
 
-## Fact Table
+### Fact Table
 
-### fact_sales
+#### fact_sales
 
--   sale_id (PK)
+**Grain:** One row per invoice transaction
+
 -   invoice_id
+-   customer_profile_id (Foreign Key)
+-   product_id (Foreign Key)
 -   branch
 -   city
 -   date
--   time
 -   payment
 -   quantity
--   tax
+-   unit_price
 -   sales
--   cogs
 -   gross_income
 -   rating
--   customer_id (FK)
--   product_id (FK)
 
 ------------------------------------------------------------------------
 
-# 🚀 Setup Instructions
+## ETL Process
 
-## 1️⃣ Clone Repository
+### 1. Extract
 
-git clone https://github.com/dossn1994/supermarket-data-pipeline.git\
-cd supermarket-data-pipeline
+-   Kaggle API used for dataset download
+-   Dynamic CSV detection
+-   Structured logging enabled
 
-## 2️⃣ Install Requirements
+### 2. Validation & Data Quality Checks
 
-pip install pandas kaggle
+-   Schema validation
+-   Null checks
+-   Invoice ID uniqueness validation
+-   Sales \> 0
+-   Quantity \> 0
+-   Rating between 0--10
 
-## 3️⃣ Configure Kaggle API
+### 3. Transform
 
-- Go to Kaggle → Account → Create API Token
-- Move kaggle.json to:
+-   Surrogate keys generated for dimensions
+-   Column renaming for warehouse consistency
+-   Fact table created at invoice-level granularity
 
-  ~/.kaggle/kaggle.json
-  chmod 600 ~/.kaggle/kaggle.json
+### 4. Load
 
-- The dataset will be automatically downloaded when the ETL script runs.
-
-------------------------------------------------------------------------
-
-# ▶️ Running the Pipeline
-
-## Step 1 --- Run ETL(Extraction + Transformation + Load)
-
-python scripts/transform_load.py
-
-This will:
-- Automatically download dataset from Kaggle
-- Create SQLite database (supermarket.db)
-- Create dimension and fact tables
-- Load transformed data
-
-## Step 2 --- Run Analytical Report
-
-python scripts/run_report.py
-
-The report:
-- Joins fact and dimension tables
-- Aggregates total sales by product line
-- Uses RANK() window function to rank product lines by revenue
+-   Explicit SQL schema creation
+-   Foreign key constraints enforced
+-   Indexes created for performance optimization
+-   Idempotent table creation (DROP IF EXISTS)
 
 ------------------------------------------------------------------------
 
-# ☁️ Proposed Cloud Deployment Architecture (GCP)
+## Analytical Report
 
--   Cloud Scheduler --- Trigger pipeline
--   Cloud Function --- Extract data using Kaggle API
--   Cloud Storage --- Extract data using Kaggle API
--   Dataflow / Cloud Function --- Transform data
--   BigQuery --- Data warehouse (dim + fact tables)
--   Looker Studio --- Reporting & dashboards
+Business Question:
 
-------------------------------------------------------------------------
+> What is the total revenue per product line within each branch, and how
+> does each product rank within its branch by revenue?
 
-# 📁 Project Structure
+Key Features: - Joins to dimension tables - Aggregations (SUM, AVG) -
+Window function using RANK() OVER (PARTITION BY)
 
-supermarket-data-pipeline/
-│
-├── scripts/
-│   ├── extract.py
-│   ├── transform_load.py
-│   └── run_report.py
-│
-├── sql/
-│   ├── create_tables.sql
-│   └── report.sql
-│
-├── data/ (auto-created, not versioned)
-├── .gitignore
-└── README.md
+To execute:
+
+``` bash
+sqlite3 supermarket.db
+.read sql/report.sql
+```
 
 ------------------------------------------------------------------------
 
-# 👤 Author
+## Project Structure
 
-Doss Napoleon
-Data Engineer
+    supermarket-data-pipeline/
+    │
+    ├── config/
+    ├── data/
+    ├── logs/
+    ├── sql/
+    │   ├── create_tables.sql
+    │   ├── indexes.sql
+    │   └── report.sql
+    ├── src/
+    │   ├── extract.py
+    │   ├── validation.py
+    │   ├── transform.py
+    │   ├── database.py
+    │   ├── load.py
+    │   ├── logger.py
+    │   └── main.py
+    ├── tests/
+    ├── README.md
+    └── .gitignore
+
+------------------------------------------------------------------------
+
+## How to Run
+
+### 1. Activate Virtual Environment
+
+``` bash
+source venv/bin/activate
+```
+
+### 2. Run the Pipeline
+
+``` bash
+python -m src.main
+```
+
+### 3. Execute the Analytical Report
+
+``` bash
+sqlite3 supermarket.db
+.read sql/report.sql
+```
+
+------------------------------------------------------------------------
+
+## Production Considerations
+
+-   Modular architecture (separation of concerns)
+-   Rotating logging handlers
+-   Data quality enforcement before transformation
+-   Explicit schema with foreign key constraints
+-   Indexing for performance optimization
+-   Idempotent pipeline execution
+
+------------------------------------------------------------------------
+
+## Future Enhancements
+
+-   Replace SQLite with cloud data warehouse (BigQuery / Redshift)
+-   Containerization using Docker
+-   Airflow orchestration
+-   Incremental loading strategy
+-   SCD Type 2 implementation for dimensions
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+This solution demonstrates production-grade ETL design, dimensional
+modeling best practices, SQL analytics with window functions, and
+structured data quality enforcement aligned with enterprise data
+engineering standards.

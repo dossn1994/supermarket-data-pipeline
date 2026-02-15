@@ -10,13 +10,19 @@ __pycache__/
 venv/
 .env/
 
-# Data files
-data/
-*.csv
-*.sqlite
+# Ignore generated data
+data/raw/*
+data/processed/*
 
-# Mac system files
-.DS_Store
+# Keep folder structure
+!data/raw/
+!data/processed/
+
+# Logs
+logs/
 
 # SQLite DB
 *.db
+
+# Mac system files
+.DS_Store
