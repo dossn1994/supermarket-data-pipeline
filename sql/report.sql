@@ -1,3 +1,6 @@
+DROP VIEW IF EXISTS revenue_rank_view;
+
+CREATE VIEW revenue_rank_view AS
 SELECT 
     dp.product_line,
     fs.branch,
@@ -12,5 +15,4 @@ JOIN dim_product dp
     ON fs.product_id = dp.product_id
 JOIN dim_customer_profile dcp
     ON fs.customer_profile_id = dcp.customer_profile_id
-GROUP BY dp.product_line, fs.branch
-ORDER BY fs.branch, revenue_rank_within_branch;
+GROUP BY dp.product_line, fs.branch;

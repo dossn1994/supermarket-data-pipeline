@@ -9,6 +9,7 @@ from src.transform import (
 from src.database import get_connection
 from src.load import load_tables
 from src.logger import get_logger
+from src.utils import execute_sqlite_script
 
 logger = get_logger(__name__)
 
@@ -43,6 +44,12 @@ def main():
         fact
     )
 
+    execute_sqlite_script(
+        config["database_path"],
+        "sql/report.sql"
+    )
+    
+    logger.info("Report view created successfully.")
     logger.info("Pipeline completed successfully.")
 
 if __name__ == "__main__":
